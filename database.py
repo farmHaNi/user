@@ -5,7 +5,6 @@ from pydantic_settings import BaseSettings
 from utils.setting import Settings
 
 
-
 settings = Settings()
 engine_url = create_engine(settings.DATABASE_URL, echo=True)
 

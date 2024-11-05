@@ -12,5 +12,6 @@ class Member(SQLModel, table=True):
     name: str
     password: str
     email: EmailStr
+    phone: str
     type: MemberType
     create_date: datetime = Field(default_factory=datetime.now)

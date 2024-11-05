@@ -8,6 +8,7 @@ class SignUp(BaseModel):
     name: str = Field(description="사용자 이름")
     password: str = Field(description="사용자 패스워드")
     email: EmailStr = Field(description="사용자 이메일")
+    phone: str = Field(description="사용자 핸드폰 번호 010-xxxx-xxxx", pattern=r'^010-\d{4}-\d{4}$')
     type: MemberType = Field(description="사용자 타입")
     
 class SignIn(BaseModel):

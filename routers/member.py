@@ -33,6 +33,7 @@ async def sign_new_member(data: SignUp, session = Depends(get_session)) -> dict:
         name = data.name,
         password = hash_password.hash_password(data.password),
         email = data.email,
+        phone = data.phone,
         type = data.type
     )
     session.add(new_member)
@@ -44,19 +45,19 @@ async def sign_new_member(data: SignUp, session = Depends(get_session)) -> dict:
 async def sign_in(data: SignIn, response_model=SignInResponse, session = Depends(get_session))-> dict:
     statement = select(Member).where(Member.user_id == data.user_id)
     result = session.execute(statement)
-    user = result.scalars().first()
+    member = result.scalars().first()
 
-    if not user:
+    if not member:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="일치하는 사용자가 존재하지 않습니다.")
-    if not hash_password.verify_password(data.password, user.password):
+    if not hash_password.verify_password(data.password, member.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="패스워드가 일치하지 않습니다.")
     
-    delattr(user, "password")
+    delattr(member, "password")
     
     return SignInResponse(
         message = "로그인에 성공했습니다.", 
-        user_id = user["user_id"], 
-        access_token = create_jwt_token(data.type, user.user_id, user.id)
+        user_id = member["user_id"], 
+        access_token = create_jwt_token(data.type, member.user_id, member.id)
     )
 
 # 정보조회
@@ -64,28 +65,30 @@ async def sign_in(data: SignIn, response_model=SignInResponse, session = Depends
 async def sign_in(user_id: str, session = Depends(get_session), token_info=Depends(userAuthenticate))-> dict:
     statement = select(Member).where(Member.user_id == user_id)
     result = session.execute(statement)
-    user = result.scalars().first()
+    member = result.scalars().first()
 
-    if not user:
+    if not member:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="일치하는 사용자가 존재하지 않습니다.")
     # 토큰의 user_id랑 "/users/{user_id}"의 user_id 비교한 후 다르면 예외처리
     if token_info["user_id"] != user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="자기 자신의 정보만 확인 가능합니다.")
 
     # 실제 유저 정보
-    user = Member(
-        user_id = user.user_id,
-        name = user.name,
-        email = user.email,
-        type = user.type
+    member = Member(
+        user_id = member.user_id,
+        name = member.name,
+        email = member.email,
+        phone = member.phone,
+        type = member.type
     )
 
     return MemberResponse(
         message = "유저 조회 완료.", 
         user = {
-                "user_id": user.user_id,
-                "name": user.name,
-                "email": user.email,
-                "type": user.type
+                "user_id": member.user_id,
+                "name": member.name,
+                "email": member.email,
+                "phone": member.phone,
+                "type": member.type
         } 
     )
