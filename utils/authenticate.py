@@ -1,6 +1,6 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from app.utils.jwt_handler import verify_jwt_token
+from utils.jwt_handler import verify_jwt_token
 
 # 요청이 들어올 때, Authorization 헤더에 토큰을 추출
 user_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/sign-in")

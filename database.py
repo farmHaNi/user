@@ -2,7 +2,7 @@ from typing import Optional
 from sqlmodel import SQLModel, Session, create_engine, select, text
 from pydantic_settings import BaseSettings
 
-from app.utils.setting import Settings
+from utils.setting import Settings
 
 
 
