@@ -1,9 +1,10 @@
 from time import time
 from fastapi import HTTPException, status
 from jose import jwt
-from utils.setting import Settings
 
-settings = Settings()
+from utils.aws_ssm_key import get_jwt_secret_key
+
+secret = get_jwt_secret_key()
 
 # JWT 토큰 생성
 def create_jwt_token(user_type: str, user_id: str, id: int) -> str:
@@ -15,17 +16,15 @@ def create_jwt_token(user_type: str, user_id: str, id: int) -> str:
         "exp": time() + 3600
     }
 
-    print(settings.SECRET_KEY)
-
-    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+    token = jwt.encode(payload, secret, algorithm="HS256")
     return token
 
 # JWT 토큰 검증
 def verify_jwt_token(token: str) -> dict:
-    print(settings.SECRET_KEY)
+    print(secret)
 
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        payload = jwt.decode(token, secret, algorithms=["HS256"])
         if "exp" not in payload or time() > payload["exp"]:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="다시 로그인해주세요")
         return payload
