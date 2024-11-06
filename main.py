@@ -4,10 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routers.member import member_router
 from database import conn
-from utils.setting import Settings
-
-
-settings = Settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -30,4 +26,4 @@ app.add_middleware(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host=settings.HOST, port=settings.PORT, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=80, reload=True)
