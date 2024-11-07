@@ -11,14 +11,14 @@ from utils.jwt_handler import create_jwt_token
 
 
 member_router = APIRouter(
-    tags=["Member"]
+    tags=["사용자"]
 )
 
 hash_password = HashPassword()
 
 # 회원가입
 @member_router.post("/sign-up", response_model=BaseResponse, status_code=status.HTTP_201_CREATED, summary="사용자 회원가입")
-async def sign_new_member(data: SignUp, session = Depends(get_session)) -> dict:
+async def sign_new_member(data: SignUp, session = Depends(get_session)) -> BaseResponse:
     # query = text("SELECT * FROM member WHERE user_id = :user_id")
     # session.execute(query, {"user_id": data.user_id})
     # session.commit()
@@ -41,8 +41,8 @@ async def sign_new_member(data: SignUp, session = Depends(get_session)) -> dict:
     return BaseResponse(message = "정상적으로 가입되었습니다.")
 
 # 로그인
-@member_router.post("/sign-in", response_model=SignInResponse, summary="사용자 로그인")
-async def sign_in(data: SignIn, response_model=SignInResponse, session = Depends(get_session))-> dict:
+@member_router.post("/sign-in", response_model=SignInResponse, status_code=status.HTTP_200_OK, summary="사용자 로그인")
+async def sign_in(data: SignIn, session = Depends(get_session))-> SignInResponse:
     statement = select(Member).where(Member.user_id == data.user_id)
     result = session.execute(statement)
     member = result.scalars().first()
@@ -56,13 +56,17 @@ async def sign_in(data: SignIn, response_model=SignInResponse, session = Depends
     
     return SignInResponse(
         message = "로그인에 성공했습니다.", 
-        user_id = member["user_id"], 
+        user_id = member.user_id, 
         access_token = create_jwt_token(data.type, member.user_id, member.id)
     )
 
 # 정보조회
-@member_router.get("/{user_id}", response_model=MemberResponse, summary="사용자 정보 조회")
-async def sign_in(user_id: str, session = Depends(get_session), token_info=Depends(userAuthenticate))-> dict:
+@member_router.get("/{user_id}", response_model=MemberResponse, status_code=status.HTTP_200_OK, summary="사용자 정보 조회")
+async def sign_in(user_id: str, session = Depends(get_session), token_info=Depends(userAuthenticate))-> MemberResponse:
+    """
+    Authorization 헤더에 토큰을 포함해주세요
+    """
+
     statement = select(Member).where(Member.user_id == user_id)
     result = session.execute(statement)
     member = result.scalars().first()
@@ -82,13 +86,12 @@ async def sign_in(user_id: str, session = Depends(get_session), token_info=Depen
         type = member.type
     )
 
+
     return MemberResponse(
-        message = "유저 조회 완료.", 
-        user = {
-                "user_id": member.user_id,
-                "name": member.name,
-                "email": member.email,
-                "phone": member.phone,
-                "type": member.type
-        } 
+        message = "유저 조회 완료.",
+        user_id=member.user_id,
+        name=member.name,
+        email=member.email,
+        phone=member.phone,
+        type=member.type
     )
