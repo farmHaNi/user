@@ -1,13 +1,11 @@
 from typing import Optional
-from sqlmodel import SQLModel, Session, create_engine, select, text
-from pydantic_settings import BaseSettings
+from sqlmodel import SQLModel, Session, create_engine
+from utils.aws_ssm_key import get_user_db_name, get_user_db_host, get_user_db_password
 
-from utils.setting import Settings
-
-
-settings = Settings()
-engine_url = create_engine(settings.DATABASE_URL, echo=True)
-
+password = get_user_db_password()
+user_db_host = get_user_db_host()
+user_db_name = get_user_db_name()
+engine_url = create_engine(f"mysql+mysqlconnector://root:{password}@{user_db_host}:3306/{user_db_name}", echo=True)
 
 def conn():
     SQLModel.metadata.create_all(engine_url)
